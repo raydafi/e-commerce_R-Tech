@@ -1,53 +1,64 @@
-
-````
-# 📱 R-Tech - E-commerce de Produits Reconditionnés
+# 📱 R-Tech — E-commerce de Produits Reconditionnés
 
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
-**R-Tech** est une application web e-commerce développée en PHP natif (sans framework), spécialisée dans la vente de produits Apple reconditionnés (iPhone, MacBook, iPad, Apple Watch). Le projet met en avant une gestion complète des utilisateurs, un catalogue dynamique et un panneau d'administration.
+R-Tech est une application web e-commerce développée en PHP natif (sans framework), spécialisée dans la vente de produits Apple reconditionnés (iPhone, MacBook, iPad, Apple Watch).
+
+---
+
+## Sommaire
+- [Fonctionnalités](#fonctionnalités)
+- [Installation](#installation)
+  - [Prérequis](#prérequis)
+  - [Cloner le projet](#cloner-le-projet)
+  - [Configuration de la base de données](#configuration-de-la-base-de-données)
+  - [Configuration PHP](#configuration-php)
+  - [Lancement](#lancement)
+- [Structure du projet](#structure-du-projet)
+- [Sécurité](#sécurité)
+- [Auteur](#auteur)
+- [Contribution](#contribution)
+- [Licence](#licence)
 
 ---
 
 ## 🚀 Fonctionnalités
 
-### 👤 Pour les Utilisateurs
-* **Authentification :** Inscription, Connexion (avec Captcha), Déconnexion.
-* **Gestion de compte :** Modification du profil, réinitialisation de mot de passe par token email.
-* **Catalogue :**
-    * Recherche de produits par nom.
-    * Filtres avancés (Prix min/max, Type, État).
-    * Système de notation (étoiles).
-* **Panier :** Ajout/Suppression d'articles, calcul automatique du total.
-* **Favoris :** Ajout/Retrait dynamique (AJAX) sans rechargement de page.
-* **Commande :** Simulation de paiement (Carte Bancaire / PayPal) et confirmation par email.
+### 👤 Pour les utilisateurs
+- Authentification : Inscription, Connexion (avec Captcha), Déconnexion.
+- Gestion du compte : modification du profil, réinitialisation du mot de passe via token par email.
+- Catalogue :
+  - Recherche de produits par nom.
+  - Filtres (prix min/max, type, état).
+  - Système de notation (étoiles).
+- Panier : ajout/suppression d'articles, calcul automatique du total.
+- Favoris : ajout/retrait dynamique (AJAX) sans rechargement de page.
+- Commande : simulation de paiement (Carte / PayPal) et confirmation par email.
 
-### 🛠️ Pour les Administrateurs
-* **Dashboard :** Vue d'ensemble des produits.
-* **Gestion des produits (CRUD) :**
-    * Ajouter un produit (avec upload d'image).
-    * Modifier les informations.
-    * Supprimer un produit.
+### 🛠️ Pour les administrateurs
+- Dashboard : vue d'ensemble des produits.
+- Gestion des produits (CRUD) : ajouter (upload d'image), modifier, supprimer.
 
 ---
 
 ## ⚙️ Installation
 
-### 1. Prérequis
-* Un serveur local (XAMPP, WAMP, MAMP) ou un serveur web avec PHP 7.4+.
-* MySQL ou MariaDB.
+### Prérequis
+- Serveur local (XAMPP, WAMP, MAMP) ou serveur web avec PHP 7.4+.
+- MySQL ou MariaDB.
+- Composer n'est pas requis (projet en PHP natif).
 
-### 2. Cloner le projet
+### Cloner le projet
 ```bash
-git clone [https://github.com/votre-username/R-Tech.git](https://github.com/votre-username/R-Tech.git)
-cd R-Tech
-````
+git clone https://github.com/raydafi/e-commerce_R-Tech.git
+cd e-commerce_R-Tech
+```
 
-### 3\. Configuration de la Base de Données
-
-Créez une base de données nommée `bdd` et importez le schéma SQL suivant :
+### Configuration de la base de données
+Créez une base de données (ex. `bdd`) et importez le schéma suivant :
 
 ```sql
 CREATE DATABASE IF NOT EXISTS bdd;
@@ -67,17 +78,17 @@ CREATE TABLE products (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
-    image LONGBLOB, 
-    type VARCHAR(50), 
-    etat VARCHAR(50), 
+    image LONGBLOB,
+    type VARCHAR(50),
+    etat VARCHAR(50),
     memoire VARCHAR(50),
     detail TEXT
 );
 
 -- Table Favoris
--- Note : user_id stocke ici le username (VARCHAR) pour correspondre à la session PHP
+-- Remarque : user_id est VARCHAR pour correspondre au username utilisé dans la session
 CREATE TABLE favoris (
-    user_id VARCHAR(255), 
+    user_id VARCHAR(255),
     product_id INT,
     PRIMARY KEY (user_id, product_id)
 );
@@ -86,9 +97,9 @@ CREATE TABLE favoris (
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    products_id INT, 
+    products_id INT,
     total_price DECIMAL(10,2),
-    status TINYINT DEFAULT 0, 
+    status TINYINT DEFAULT 0,
     order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     email_order TINYINT DEFAULT 0
 );
@@ -111,53 +122,61 @@ CREATE TABLE password_resets (
 );
 ```
 
-### 4\. Configuration PHP
+> Astuce : utilisez phpMyAdmin ou la ligne de commande MySQL pour importer ce SQL.
 
-Ouvrez le fichier `bdd.php` et modifiez les identifiants si nécessaire :
+### Configuration PHP
+Ouvrez le fichier `bdd.php` (ou votre fichier de configuration DB) et adaptez les identifiants :
 
 ```php
 <?php
 $servername = "localhost";
-$dbname = "bdd";       // Nom de votre BDD
-$dbusername = "root";  // Votre utilisateur SQL
-$dbpassword = "";      // Votre mot de passe SQL
+$dbname = "bdd";       // Nom de la BDD
+$dbusername = "root";  // Utilisateur SQL
+$dbpassword = "";      // Mot de passe SQL
 ?>
 ```
 
-### 5\. Lancement
+Assurez-vous que les extensions PHP nécessaires sont activées (PDO, pdo_mysql).
 
-Placez les fichiers dans le dossier `htdocs` (XAMPP) ou `www` (WAMP) et accédez à :
-`http://localhost/R-Tech/index.php`
+### Lancement
+Placez le dossier du projet dans le dossier racine de votre serveur local (ex. `htdocs` pour XAMPP) puis rendez-vous sur :
+http://localhost/e-commerce_R-Tech/index.php
 
------
+---
 
-## 📂 Structure du Projet
+## 📂 Structure du projet (principaux fichiers)
+- index.php : page d'accueil
+- produits.php : catalogue principal avec filtres
+- detail.php : page de détail d'un produit
+- cart.php : gestion du panier
+- favoris.php & add_to_favorite.php : gestion et logique AJAX des favoris
+- dashboard.php : panneau d'administration
+- connexion.php / inscription.php : pages d'authentification
+- image.php : rendu des images stockées en BLOB
+- bdd.php : configuration de la connexion à la base de données
 
-  * `index.php` : Page d'accueil (Landing page).
-  * `produits.php` : Catalogue principal avec filtres.
-  * `detail.php` : Page détail d'un produit.
-  * `cart.php` : Gestion du panier.
-  * `favoris.php` & `add_to_favorite.php` : Gestion et logique AJAX des favoris.
-  * `dashboard.php` : Panneau d'administration.
-  * `connexion.php` / `inscription.php` : Authentification.
-  * `image.php` : Script de rendu des images stockées en BLOB.
-
------
+---
 
 ## 🛡️ Sécurité
+Le projet met en œuvre plusieurs bonnes pratiques :
+- Mots de passe : hashés avec password_hash(), vérifiés via password_verify().
+- Requêtes : utilisation de requêtes préparées (PDO::prepare) pour éviter les injections SQL.
+- XSS : échappement des sorties avec htmlspecialchars().
+- Sessions : gestion des sessions PHP pour l'état utilisateur.
+- (À améliorer) : validation côté serveur et côté client des données entrantes, rate limiting, protections CSRF pour les formulaires sensibles.
 
-Le projet implémente plusieurs mesures de sécurité de base :
-
-  * **Mots de passe :** Hashage via `password_hash()` et vérification via `password_verify()`.
-  * **Injections SQL :** Utilisation systématique de requêtes préparées (`PDO::prepare`).
-  * **XSS :** Échappement des sorties avec `htmlspecialchars()`.
-  * **Session :** Gestion des sessions PHP pour l'état utilisateur.
-
------
+---
 
 ## 📝 Auteur
+Projet réalisé par Raydafi — développement web.
 
-Projet réalisé dans le cadre d'un développement web PHP.
+---
 
-```
-```
+## 🤝 Contribution
+Contributions et retours bienvenus :
+- Ouvrez une issue pour signaler un bug ou proposer une amélioration.
+- Proposez une PR pour corriger/ajouter une fonctionnalité.
+
+---
+
+Si vous souhaitez que je pousse ce README amélioré directement dans le dépôt, je peux créer une branche (par ex. `fix/readme`) et proposer un commit/PR — dites-moi si je dois le faire et quel nom de branche utiliser.
