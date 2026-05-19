@@ -168,7 +168,7 @@ Le projet met en œuvre plusieurs bonnes pratiques :
 ---
 
 ## 📝 Auteur
-Projet réalisé par Raydafi — développement web.
+Projet réalisé par Rayan Dafi — développement web.
 
 ---
 
