@@ -1,4 +1,4 @@
-# 💻 R-Tech — E-commerce de Produits High-Tech
+# R-Tech — E-commerce de Produits High-Tech
 
 ![Symfony](https://img.shields.io/badge/Symfony-6.x%20%7C%207.x-000000?style=for-the-badge&logo=symfony&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
@@ -6,7 +6,7 @@
 
 **R-Tech** est une application web e-commerce développée avec le framework **Symfony**, spécialisée dans la vente de produits high-tech. 
 
-> 💡 **Note sur l'extensibilité :** Bien que l'interface HTML et l'habillage graphique soient configurés pour la marque *R-Tech* (produits high-tech), le modèle de données et l'architecture du système peuvent être facilement adaptés pour d'autres domaines d'activité.
+> **Note sur l'extensibilité :** Bien que l'interface HTML et l'habillage graphique soient configurés pour la marque *R-Tech* (produits high-tech), le modèle de données et l'architecture du système peuvent être facilement adaptés pour d'autres domaines d'activité.
 
 ---
 
@@ -22,9 +22,9 @@
 
 ---
 
-## 🚀 Fonctionnalités
+## Fonctionnalités
 
-### 👤 Pour les utilisateurs
+### Pour les utilisateurs
 - **Authentification :** Inscription et connexion sécurisées gérées nativement par Symfony.
 - **Catalogue :**
   - Recherche de produits par nom.
@@ -32,14 +32,14 @@
 - **Panier :** Ajout, modification et suppression d'articles avec calcul en temps réel.
 - **Paiement Sécurisé :** Intégration complète avec l'API **Stripe** pour la gestion des transactions bancaires.
 
-### 🛠️ Pour les administrateurs
+### Pour les administrateurs
 - **Back-Office complet :** Intégration du puissant bundle **EasyAdmin** permettant une gestion simplifiée et complète (CRUD) des produits, des catégories, des utilisateurs et des commandes.
 
 ---
 
-## ⚙️ Installation
+## Installation
 
-### 📋 Prérequis (PHP, Composer, Symfony)
+### Prérequis (PHP, Composer, Symfony)
 
 Ce projet nécessite un environnement PHP moderne. WampServer n'est plus requis car la base de données est hébergée à distance.
 
@@ -59,7 +59,7 @@ La CLI Symfony facilite le développement local.
 
 ---
 
-### 📥 Cloner le projet
+### Cloner le projet
 
 ```bash
 git clone https://github.com/raydafi/e-commerce_R-Tech.git
@@ -74,7 +74,7 @@ composer install
 
 ---
 
-## 🛠️ Configuration (.env & Base de données distant)
+## Configuration (.env & Base de données distant)
 
 La base de données du projet est hébergée à distance sur Alwaysdata.
 
@@ -116,7 +116,7 @@ Votre site est maintenant accessible à l'adresse : http://127.0.0.1:8000
 
 ---
 
-## 📂 Structure du projet (Symfony)
+## Structure du projet (Symfony)
 
 Le projet suit la structure standard et moderne d'une application Symfony (architecture MVC) :
 
@@ -132,7 +132,7 @@ Le projet suit la structure standard et moderne d'une application Symfony (archi
 
 ---
 
-## 🛡️ Sécurité
+## Sécurité
 
 Le framework Symfony prend en charge nativement les aspects critiques de la sécurité de l'application :
 
@@ -146,6 +146,6 @@ Le framework Symfony prend en charge nativement les aspects critiques de la séc
 
 ---
 
-## 📝 Auteur
+## Auteur
 
 Projet réalisé par Rayan Dafi — développement web.
