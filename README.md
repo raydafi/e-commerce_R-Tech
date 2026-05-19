@@ -1,179 +1,127 @@
-# 📱 R-Tech — E-commerce de Produits Reconditionnés
+# 💻 R-Tech — E-commerce de Produits High-Tech
 
-![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![Symfony](https://img.shields.io/badge/Symfony-6.x%20%7C%207.x-000000?style=for-the-badge&logo=symfony&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
-R-Tech est une application web e-commerce développée en PHP natif (sans framework), spécialisée dans la vente de produits Apple reconditionnés (iPhone, MacBook, iPad, Apple Watch).
+**R-Tech** est une application web e-commerce développée avec le framework **Symfony**, spécialisée dans la vente de produits high-tech. 
+
+> 💡 **Note sur l'extensibilité :** Bien que l'interface HTML et l'habillage graphique soient configurés pour la marque *R-Tech* (produits high-tech), le modèle de données et l'architecture du site sont entièrement génériques et permettent la vente de n'importe quel type de produit de n'importe quelle catégorie.
 
 ---
 
 ## Sommaire
 - [Fonctionnalités](#fonctionnalités)
 - [Installation](#installation)
-  - [Prérequis](#prérequis)
+  - [Prérequis (PHP, Composer, Symfony)](#prérequis-php-composer-symfony)
   - [Cloner le projet](#cloner-le-projet)
-  - [Configuration de la base de données](#configuration-de-la-base-de-données)
-  - [Configuration PHP](#configuration-php)
-  - [Lancement](#lancement)
+  - [Configuration (.env & Base de données)](#configuration-env--base-de-données)
 - [Structure du projet](#structure-du-projet)
 - [Sécurité](#sécurité)
 - [Auteur](#auteur)
-- [Contribution](#contribution)
-- [Licence](#licence)
 
 ---
 
 ## 🚀 Fonctionnalités
 
 ### 👤 Pour les utilisateurs
-- Authentification : Inscription, Connexion (avec Captcha), Déconnexion.
-- Gestion du compte : modification du profil, réinitialisation du mot de passe via token par email.
-- Catalogue :
+- **Authentification :** Inscription et connexion sécurisées gérées nativement par Symfony.
+- **Catalogue :**
   - Recherche de produits par nom.
-  - Filtres (prix min/max, type, état).
-  - Système de notation (étoiles).
-- Panier : ajout/suppression d'articles, calcul automatique du total.
-- Favoris : ajout/retrait dynamique (AJAX) sans rechargement de page.
-- Commande : simulation de paiement (Carte / PayPal) et confirmation par email.
+  - Filtres par **catégorie** et par **prix** (le filtrage par état a été retiré).
+- **Panier :** Ajout, modification et suppression d'articles avec calcul en temps réel.
+- **Paiement Sécurisé :** Intégration complète avec l'API **Stripe** pour la gestion des transactions bancaires.
 
 ### 🛠️ Pour les administrateurs
-- Dashboard : vue d'ensemble des produits.
-- Gestion des produits (CRUD) : ajouter (upload d'image), modifier, supprimer.
+- **Back-Office complet :** Intégration du puissant bundle **EasyAdmin** permettant une gestion simplifiée et complète (CRUD) des produits, des catégories, des utilisateurs et des commandes.
 
 ---
 
 ## ⚙️ Installation
 
-### Prérequis
-- Serveur local (XAMPP, WAMP, MAMP) ou serveur web avec PHP 7.4+.
-- MySQL ou MariaDB.
-- Composer n'est pas requis (projet en PHP natif).
+### 📋 Prérequis (PHP, Composer, Symfony)
 
-### Cloner le projet
+Ce projet nécessite un environnement PHP moderne. WampServer n'est plus requis car la base de données est hébergée à distance.
+
+#### 1. Installer PHP
+- **Windows :** Téléchargez PHP (8.2+) sur [windows.php.net](https://windows.php.net/). Extrayez-le et ajoutez le chemin vers le dossier PHP dans votre variable d'environnement `PATH`. Assurez-vous d'activer les extensions `pdo_mysql`, `intl`, et `ctype` dans votre fichier `php.ini`.
+- **macOS / Linux :** Utilisez votre gestionnaire de paquets (ex: `brew install php` ou `sudo apt install php`).
+
+#### 2. Installer Composer
+Composer est le gestionnaire de dépendances PHP essentiel pour Symfony.
+- Suivez les instructions officielles sur [getcomposer.org](https://getcomposer.org/download/).
+- Vérifiez l'installation en tapant : `composer --version`
+
+#### 3. Installer la CLI Symfony
+La CLI Symfony facilite le développement local.
+- Suivez le guide sur [symfony.com/download](https://symfony.com/download).
+- Vérifiez l'installation en tapant : `symfony -v`
+
+---
+
+### 📥 Cloner le projet
+
 ```bash
-git clone https://github.com/raydafi/e-commerce_R-Tech.git
+git clone [https://github.com/raydafi/e-commerce_R-Tech.git](https://github.com/raydafi/e-commerce_R-Tech.git)
 cd e-commerce_R-Tech
-```
+Installez ensuite toutes les dépendances PHP du projet :
 
-### Configuration de la base de données
-Créez une base de données (ex. `bdd`) et importez le schéma suivant :
+Bash
+composer install
+🛠️ Configuration (.env & Base de données distant)
+La base de données du projet est hébergée à distance sur Alwaysdata.
 
-```sql
-CREATE DATABASE IF NOT EXISTS bdd;
-USE bdd;
+Étape 1 : Configurer le fichier .env
+À la racine du projet, dupliquez le fichier .env en .env.local s'il n'existe pas, puis configurez votre chaîne de connexion à la base de données Alwaysdata ainsi que vos clés Stripe :
 
--- Table Utilisateurs
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL
-);
+Ini, TOML
+# Configuration de la base de données Alwaysdata
+DATABASE_URL="mysql://USER_ALWAYSDATA:PASSWORD_ALWAYSDATA@ssh-USER_ALWAYSDATA.alwaysdata.net:3306/DB_NAME?serverVersion=8.0.0&charset=utf8mb4"
 
--- Table Produits
-CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    image LONGBLOB,
-    type VARCHAR(50),
-    etat VARCHAR(50),
-    memoire VARCHAR(50),
-    detail TEXT
-);
+# Configuration Stripe
+STRIPE_PUBLIC_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+Étape 2 : Export des entités et migration vers la BDD
+Grâce à Doctrine (l'ORM de Symfony), vous n'avez pas besoin de charger un fichier SQL manuellement. Exécutez simplement les lignes de commande suivantes pour créer et exporter le schéma des entités sur votre base de données Alwaysdata :
 
--- Table Favoris
--- Remarque : user_id est VARCHAR pour correspondre au username utilisé dans la session
-CREATE TABLE favoris (
-    user_id VARCHAR(255),
-    product_id INT,
-    PRIMARY KEY (user_id, product_id)
-);
+Bash
+# Générer le fichier de migration basé sur les entités Symfony
+php bin/console make:migration
 
--- Table Commandes
-CREATE TABLE orders (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    products_id INT,
-    total_price DECIMAL(10,2),
-    status TINYINT DEFAULT 0,
-    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    email_order TINYINT DEFAULT 0
-);
+# Exécuter la migration pour créer les tables sur la BDD distante
+php bin/console doctrine:migrations:migrate
+Le schéma généré sur votre base de données comprendra les tables suivantes : category, order, order_item, product, user.
 
--- Table Avis / Notes
-CREATE TABLE ratings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255),
-    product_id INT,
-    rating INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+Étape 3 : Lancer le projet en local
+Pour démarrer le serveur de développement interne de Symfony, exécutez :
 
--- Table Réinitialisation Mot de passe
-CREATE TABLE password_resets (
-    email VARCHAR(255),
-    token VARCHAR(255),
-    expires_at DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-```
+Bash
+symfony server:start
+Votre site est maintenant accessible à l'adresse : http://127.0.0.1:8000
 
-> Astuce : utilisez phpMyAdmin ou la ligne de commande MySQL pour importer ce SQL.
+📂 Structure du projet (Symfony)
+Le projet suit la structure standard et moderne d'une application Symfony (architecture MVC) :
 
-### Configuration PHP
-Ouvrez le fichier `bdd.php` (ou votre fichier de configuration DB) et adaptez les identifiants :
+src/Entity/ : Contient les classes de données réutilisables qui mappent la base de données (Category.php, Order.php, OrderItem.php, Product.php, User.php).
 
-```php
-<?php
-$servername = "localhost";
-$dbname = "bdd";       // Nom de la BDD
-$dbusername = "root";  // Utilisateur SQL
-$dbpassword = "";      // Mot de passe SQL
-?>
-```
+src/Controller/ : Gère la logique des routes utilisateur et de l'affichage (dont Admin/ qui abrite la configuration d'EasyAdmin).
 
-Assurez-vous que les extensions PHP nécessaires sont activées (PDO, pdo_mysql).
+src/Repository/ : Contient les requêtes personnalisées pour récupérer les données de la BDD.
 
-### Lancement
-Placez le dossier du projet dans le dossier racine de votre serveur local (ex. `htdocs` pour XAMPP) puis rendez-vous sur :
-http://localhost/e-commerce_R-Tech/index.php
+templates/ : Contient les vues du site web écrites avec le moteur de template Twig.
 
----
+config/ : Regroupe tous les fichiers de configuration de l'application (sécurité, packages, routes).
 
-## 📂 Structure du projet (principaux fichiers)
-- index.php : page d'accueil
-- produits.php : catalogue principal avec filtres
-- detail.php : page de détail d'un produit
-- cart.php : gestion du panier
-- favoris.php & add_to_favorite.php : gestion et logique AJAX des favoris
-- dashboard.php : panneau d'administration
-- connexion.php / inscription.php : pages d'authentification
-- image.php : rendu des images stockées en BLOB
-- bdd.php : configuration de la connexion à la base de données
+🛡️ Sécurité
+Le framework Symfony prend en charge nativement les aspects critiques de la sécurité de l'application :
 
----
+Authentification et Autorisation : Gestion stricte des rôles (ex: accès au dossier /admin restreint aux utilisateurs possédant le rôle ROLE_ADMIN).
 
-## 🛡️ Sécurité
-Le projet met en œuvre plusieurs bonnes pratiques :
-- Mots de passe : hashés avec password_hash(), vérifiés via password_verify().
-- Requêtes : utilisation de requêtes préparées (PDO::prepare) pour éviter les injections SQL.
-- XSS : échappement des sorties avec htmlspecialchars().
-- Sessions : gestion des sessions PHP pour l'état utilisateur.
-- (À améliorer) : validation côté serveur et côté client des données entrantes, rate limiting, protections CSRF pour les formulaires sensibles.
+Hachage des mots de passe : Géré automatiquement par le composant Security de Symfony à l'aide des algorithmes de hachage recommandés et sécurisés les plus récents (comme le Password Hasher par défaut configuré avec le mécanisme automatique le plus fort).
 
----
+Protection CSRF : Intégrée automatiquement sur l'ensemble des formulaires générés par Symfony afin d'empêcher les attaques par falsification de requête intersites.
 
-## 📝 Auteur
+Injections SQL & XSS : Doctrine utilise systématiquement des requêtes préparées, et le moteur Twig applique un échappement automatique de toutes les variables afin de neutraliser tout risque d'attaque par faille XSS.
+
+📝 Auteur
 Projet réalisé par Rayan Dafi — développement web.
-
----
-
-## 🤝 Contribution
-Contributions et retours bienvenus :
-- Ouvrez une issue pour signaler un bug ou proposer une amélioration.
-- Proposez une PR pour corriger/ajouter une fonctionnalité.
-
