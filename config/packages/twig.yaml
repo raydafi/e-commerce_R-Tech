@@ -1,0 +1,5 @@
+twig:
+    file_name_pattern: '*.twig'
+    # Ajoute ces lignes :
+    globals:
+        cart_helper: '@App\Service\CartService'

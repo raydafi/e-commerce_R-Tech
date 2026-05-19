@@ -1,0 +1,758 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Finaliser la commande - R-Tech{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── PAGE LAYOUT ──────────────────────────────────────────── */
+    .checkout-page {
+        max-width: 1100px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        grid-column: 1 / -1;
+    }
+
+    .breadcrumb a {
+        color: var(--text-muted);
+        transition: color var(--transition);
+    }
+
+    .breadcrumb a:hover { color: var(--text-secondary); }
+
+    .breadcrumb .current { color: var(--text-secondary); }
+
+    .breadcrumb .step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .breadcrumb .step-dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        font-family: var(--font-display);
+    }
+
+    .breadcrumb .step-dot.done {
+        background: rgba(74,222,128,0.15);
+        border: 1px solid rgba(74,222,128,0.3);
+        color: #4ade80;
+    }
+
+    .breadcrumb .step-dot.active {
+        background: rgba(230,48,48,0.15);
+        border: 1px solid rgba(230,48,48,0.4);
+        color: var(--accent-light);
+    }
+
+    .breadcrumb .step-dot.pending {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    /* ── SECTION BLOCKS ───────────────────────────────────────── */
+    .checkout-left {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .page-heading {
+        font-family: var(--font-display);
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subheading {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+    }
+
+    .form-panel {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .panel-header svg { color: var(--accent); flex-shrink: 0; }
+
+    .panel-title {
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        letter-spacing: -0.2px;
+    }
+
+    .panel-body {
+        padding: 1.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* ── FORM FIELDS ──────────────────────────────────────────── */
+    .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .field input,
+    .field select {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color var(--transition), box-shadow var(--transition);
+        width: 100%;
+        appearance: none;
+    }
+
+    .field input::placeholder { color: var(--text-muted); }
+
+    .field input:focus,
+    .field select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .field select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a4b5c' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    .field select option { background: #1a1b23; }
+
+    /* ── PAYMENT OPTIONS ──────────────────────────────────────── */
+    .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .payment-option {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: border-color var(--transition), background var(--transition);
+        position: relative;
+    }
+
+    .payment-option:hover {
+        border-color: var(--border-hover);
+        background: rgba(255,255,255,0.03);
+    }
+
+    .payment-option input[type="radio"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-label {
+        color: var(--text-primary);
+    }
+
+    .payment-option:has(input:checked) {
+        border-color: rgba(230,48,48,0.4);
+        background: rgba(230,48,48,0.04);
+    }
+
+    .payment-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+    }
+
+    .payment-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        transition: color var(--transition);
+    }
+
+    .payment-desc {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .payment-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .badge-sim {
+        padding: 2px 8px;
+        background: rgba(230,48,48,0.1);
+        border: 1px solid rgba(230,48,48,0.25);
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--accent-light);
+        letter-spacing: 0.3px;
+    }
+
+    /* ── ORDER SUMMARY ────────────────────────────────────────── */
+    .summary-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        position: sticky;
+        top: calc(var(--nav-height) + 1.5rem);
+    }
+
+    .summary-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .summary-title {
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        letter-spacing: -0.2px;
+    }
+
+    .summary-edit {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: color var(--transition);
+    }
+
+    .summary-edit:hover { color: var(--text-secondary); }
+
+    /* Cart items mini list */
+    .summary-items {
+        border-bottom: 1px solid var(--border);
+        max-height: 260px;
+        overflow-y: auto;
+    }
+
+    .summary-items::-webkit-scrollbar { width: 4px; }
+    .summary-items::-webkit-scrollbar-track { background: transparent; }
+    .summary-items::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-item:last-child { border-bottom: none; }
+
+    .summary-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .summary-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .summary-thumb-qty {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        background: var(--accent);
+        border-radius: 50%;
+        font-size: 9px;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-display);
+    }
+
+    .summary-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .summary-item-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .summary-item-cat {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .summary-item-price {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Totals */
+    .summary-totals {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 0;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row .label { color: var(--text-secondary); }
+    .summary-row .value { color: var(--text-primary); font-weight: 500; }
+    .summary-row.free .value { color: #4ade80; font-size: 12px; }
+
+    .summary-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0.75rem 0;
+    }
+
+    .summary-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 1.25rem;
+    }
+
+    .total-label {
+        font-family: var(--font-display);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .total-amount {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -1px;
+    }
+
+    .total-amount sup {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        vertical-align: super;
+    }
+
+    /* ── SUBMIT BUTTON ────────────────────────────────────────── */
+    .btn-order {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 13px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-body);
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background var(--transition), box-shadow var(--transition);
+        margin-bottom: 10px;
+    }
+
+    .btn-order:hover {
+        background: var(--accent-light);
+        box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-back-cart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-hover);
+        color: var(--text-secondary);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        transition: color var(--transition), border-color var(--transition), background var(--transition);
+    }
+
+    .btn-back-cart:hover {
+        color: var(--text-primary);
+        border-color: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.04);
+    }
+
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 1rem;
+        padding: 0 1.5rem 1.25rem;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+        .checkout-page {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card { position: static; }
+    }
+
+    @media (max-width: 580px) {
+        .checkout-page { padding: 0 1rem; margin: 1.5rem auto; }
+        .field-row { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="checkout-page">
+
+    {# ── BREADCRUMB / STEPS ──────────────────────────────────── #}
+    <nav class="breadcrumb">
+        <div class="step">
+            <span class="step-dot done">✓</span>
+            <a href="{{ path('app_cart_index') }}">Panier</a>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <div class="step">
+            <span class="step-dot active">2</span>
+            <span class="current">Livraison & paiement</span>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <div class="step">
+            <span class="step-dot pending">3</span>
+            <span>Confirmation</span>
+        </div>
+    </nav>
+
+    {# ── LEFT : FORMS ────────────────────────────────────────── #}
+    <div class="checkout-left">
+
+        <div>
+            <h1 class="page-heading">Finaliser la commande</h1>
+            <p class="page-subheading">Renseignez vos informations de livraison et de paiement.</p>
+        </div>
+
+        <form action="{{ path('app_checkout') }}" method="POST">
+            <input type="hidden" name="_token" value="{{ csrf_token('checkout') }}">
+
+            {# ── COORDONNÉES ─────────────────────────────────── #}
+            <div class="form-panel" style="margin-bottom: 1.25rem;">
+                <div class="panel-header">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="panel-title">Coordonnées</span>
+                </div>
+                <div class="panel-body">
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="first_name">Prénom</label>
+                            <input type="text" id="first_name" name="first_name"
+                                   value="{{ app.user.firstName ?? '' }}"
+                                   placeholder="Jean" required>
+                        </div>
+                        <div class="field">
+                            <label for="last_name">Nom</label>
+                            <input type="text" id="last_name" name="last_name"
+                                   value="{{ app.user.lastName ?? '' }}"
+                                   placeholder="Dupont" required>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field full">
+                            <label for="email">Adresse e-mail</label>
+                            <input type="email" id="email" name="email"
+                                   value="{{ app.user.email ?? '' }}"
+                                   placeholder="jean.dupont@email.com" required>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field full">
+                            <label for="phone">Téléphone</label>
+                            <input type="text" id="phone" name="phone"
+                                   placeholder="+33 6 00 00 00 00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── ADRESSE DE LIVRAISON ─────────────────────────── #}
+            <div class="form-panel" style="margin-bottom: 1.25rem;">
+                <div class="panel-header">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span class="panel-title">Adresse de livraison</span>
+                </div>
+                <div class="panel-body">
+                    <div class="field-row">
+                        <div class="field full">
+                            <label for="address">Adresse</label>
+                            <input type="text" id="address" name="address"
+                                   placeholder="12 rue de la Paix" required>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="zip">Code postal</label>
+                            <input type="text" id="zip" name="zip"
+                                   placeholder="75001" required>
+                        </div>
+                        <div class="field">
+                            <label for="city">Ville</label>
+                            <input type="text" id="city" name="city"
+                                   placeholder="Paris" required>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field full">
+                            <label for="country">Pays</label>
+                            <select id="country" name="country">
+                                <option value="FR" selected>France</option>
+                                <option value="BE">Belgique</option>
+                                <option value="CH">Suisse</option>
+                                <option value="LU">Luxembourg</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── PAIEMENT ─────────────────────────────────────── #}
+            <div class="form-panel" style="margin-bottom: 1.25rem;">
+                <div class="panel-header">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <span class="panel-title">Mode de paiement</span>
+                    <span class="badge-sim">Simulé</span>
+                </div>
+                <div class="panel-body">
+                    <div class="payment-options">
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="card" checked>
+                            <div class="payment-label">
+                                <span class="payment-name">Carte bancaire</span>
+                                <span class="payment-desc">Visa, Mastercard, CB</span>
+                            </div>
+                            <span class="payment-icon">💳</span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="paypal">
+                            <div class="payment-label">
+                                <span class="payment-name">PayPal</span>
+                                <span class="payment-desc">Paiement via votre compte PayPal</span>
+                            </div>
+                            <span class="payment-icon">🅿️</span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="transfer">
+                            <div class="payment-label">
+                                <span class="payment-name">Virement bancaire</span>
+                                <span class="payment-desc">Sous 2 à 3 jours ouvrés</span>
+                            </div>
+                            <span class="payment-icon">🏦</span>
+                        </label>
+
+                    </div>
+                </div>
+            </div>
+
+    {# ── RIGHT : ORDER SUMMARY ──────────── (button inside form) #}
+
+        {# Hidden on desktop — button is inside form and lives in left col #}
+        <div style="display:none;">__form_anchor__</div>
+
+    </div>{# end checkout-left #}
+
+    {# ── RIGHT : SUMMARY CARD ────────────────────────────────── #}
+    <div>
+
+        <div class="summary-card">
+
+            <div class="summary-header">
+                <span class="summary-title">Récapitulatif</span>
+                <a href="{{ path('app_cart_index') }}" class="summary-edit">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Modifier
+                </a>
+            </div>
+
+            {# Items list #}
+            <div class="summary-items">
+                {% for item in cart %}
+                    <div class="summary-item">
+                        <div class="summary-thumb">
+                            {% if item.product.image %}
+                                <img src="{{ asset('uploads/images/products/' ~ item.product.image) }}"
+                                     alt="{{ item.product.name }}">
+                            {% else %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted)"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 5-5 4 4 3-3 6 6"/></svg>
+                            {% endif %}
+                            <span class="summary-thumb-qty">{{ item.quantity }}</span>
+                        </div>
+                        <div class="summary-item-info">
+                            <div class="summary-item-name">{{ item.product.name }}</div>
+                            <div class="summary-item-cat">
+                                {{ item.product.category ? item.product.category.name : 'Sans catégorie' }}
+                            </div>
+                        </div>
+                        <div class="summary-item-price">
+                            {{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Totals #}
+            <div class="summary-totals">
+                <div class="summary-row">
+                    <span class="label">Sous-total</span>
+                    <span class="value">{{ total|number_format(2, ',', ' ') }} €</span>
+                </div>
+                <div class="summary-row free">
+                    <span class="label">Livraison</span>
+                    <span class="value">Gratuite</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">TVA (20%)</span>
+                    <span class="value">{{ (total * 0.2)|number_format(2, ',', ' ') }} €</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-total-row">
+                    <span class="total-label">Total TTC</span>
+                    <span class="total-amount">
+                        {{ (total * 1.2)|number_format(2, ',', ' ') }}<sup>€</sup>
+                    </span>
+                </div>
+
+                <button type="submit" form="checkout-form" class="btn-order">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Confirmer la commande
+                </button>
+
+                <a href="{{ path('app_cart_index') }}" class="btn-back-cart">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    Retour au panier
+                </a>
+            </div>
+
+            <div class="secure-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Paiement 100% sécurisé
+            </div>
+
+        </div>
+
+    </div>
+
+    </form>{# form wraps both columns via CSS grid — valid HTML #}
+
+</div>
+
+{% endblock %}

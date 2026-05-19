@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}R-Tech{% endblock %}</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%23333333'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='36' fill='white'>R</text></svg>">
+
+        <style>
+            /* ── VARIABLES & RESET ─────────────────────────────────── */
+            *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+            :root {
+                --bg-base:        #f4f4f4; /* Fond gris très clair pour le site */
+                --bg-surface:     #ffffff; /* Blanc pur pour les conteneurs */
+                --nav-bg:         #ffffff; /* Navbar blanche */
+                --nav-bg-scroll:  rgba(255, 255, 255, 0.95); /* Blanche transparente au scroll */
+                --text-primary:   #333333; /* Texte sombre */
+                --text-secondary: #666666;
+                --border:         #e9ecef;
+                --accent:         #ff3b30; /* Rouge pour les badges/alertes */
+                --font-body:      'DM Sans', Arial, sans-serif;
+                --nav-height:     70px;
+                --transition:     0.3s ease;
+            }
+
+            html { scroll-behavior: smooth; }
+
+            body {
+                font-family: var(--font-body);
+                background-color: var(--bg-base);
+                color: var(--text-primary);
+                line-height: 1.6;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                padding-top: var(--nav-height); 
+            }
+
+            a { color: inherit; text-decoration: none; }
+
+            /* ── NAVBAR (BLANCHE) ────────────────────────────────────── */
+            .navbar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: var(--nav-height);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: var(--nav-bg);
+                padding: 0 2rem;
+                z-index: 1000;
+                box-shadow: 0 1px 5px rgba(0,0,0,0.05); /* Ombre légère */
+                transition: background-color var(--transition), backdrop-filter var(--transition);
+                border-bottom: 1px solid var(--border);
+            }
+
+            .navbar.scrolled {
+                background-color: var(--nav-bg-scroll);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+
+            /* Logo */
+            .navbar-left a {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: var(--text-primary); /* Texte sombre */
+                font-weight: 700;
+                font-size: 24px;
+                letter-spacing: -0.5px;
+            }
+
+            .navbar-logo {
+                width: 40px;
+                height: 40px;
+                background: var(--text-primary); /* Fond sombre pour le logo */
+                color: white; /* Lettre R en blanc */
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 20px;
+            }
+
+            /* Liens de droite */
+            .navbar-right {
+                display: flex;
+                align-items: center;
+                height: 100%;
+                gap: 15px;
+            }
+
+            /* Icônes SVG */
+            .icon-btn {
+                width: 38px;
+                height: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-primary); /* Icônes sombres */
+                border-radius: 8px;
+                transition: background var(--transition), transform 0.2s;
+                cursor: pointer;
+            }
+
+            .icon-btn:hover {
+                background: rgba(0,0,0,0.05); /* Léger fond gris au survol */
+                transform: translateY(-2px);
+            }
+
+            .icon-btn svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            /* Badge panier */
+            .cart-container {
+                position: relative;
+                display: flex;
+                align-items: center;
+                height: 100%;
+            }
+
+            .cart-count {
+                position: absolute;
+                top: 10px;
+                right: -5px;
+                background-color: var(--accent);
+                color: white;
+                border-radius: 50%;
+                height: 18px;
+                min-width: 18px;
+                padding: 0 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 10px;
+                font-weight: bold;
+                border: 2px solid var(--nav-bg); /* Bordure blanche pour détourer */
+            }
+
+            /* ── MENU DÉROULANT ───────── */
+            .dropdown {
+                position: relative;
+                display: flex;
+                align-items: center;
+                height: var(--nav-height);
+            }
+
+            .dropdown-content {
+                visibility: hidden;
+                opacity: 0;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background-color: var(--bg-surface);
+                min-width: 200px;
+                box-shadow: 0px 8px 24px rgba(0,0,0,0.1);
+                border-radius: 0 0 8px 8px;
+                padding: 10px 0;
+                z-index: 1001;
+                transform: translateY(10px);
+                transition: all 0.2s ease;
+                border: 1px solid var(--border);
+                border-top: none;
+            }
+
+            .dropdown-content a {
+                display: block;
+                color: var(--text-primary);
+                font-size: 14px;
+                padding: 10px 20px;
+                transition: background 0.2s, color 0.2s;
+            }
+
+            .dropdown-content a:hover {
+                background-color: var(--bg-base); /* Survol en gris très clair */
+                padding-left: 25px;
+            }
+
+            .dropdown:hover .dropdown-content,
+            .dropdown.active .dropdown-content {
+                visibility: visible;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Hamburger Menu (Mobile) */
+            .navbar-toggle {
+                display: none;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 22px;
+                width: 30px;
+                cursor: pointer;
+            }
+
+            .navbar-toggle div {
+                background-color: var(--text-primary); /* Barres sombres */
+                height: 3px;
+                width: 100%;
+                border-radius: 3px;
+                transition: 0.3s;
+            }
+
+            /* ── MAIN CONTENT ───────────────────────────────────────── */
+            .site-main {
+                flex: 1;
+            }
+
+            /* ── FOOTER ─────────────────────────────────────────────── */
+            .site-footer {
+                margin-top: auto;
+                background-color: var(--bg-surface);
+                border-top: 1px solid var(--border);
+                padding: 3rem 2rem 1.5rem;
+                color: var(--text-secondary);
+                text-align: center;
+            }
+
+            .footer-links {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                margin: 1.5rem 0;
+                flex-wrap: wrap;
+            }
+
+            .footer-links a {
+                color: var(--text-primary);
+                font-weight: 500;
+                transition: color 0.2s;
+            }
+
+            .footer-links a:hover {
+                text-decoration: underline;
+                color: #000;
+            }
+
+            .footer-bottom {
+                font-size: 13px;
+                color: #999;
+                margin-top: 1.5rem;
+            }
+
+            /* ── RESPONSIVE MOBILE ──────────────────────────────────── */
+            @media (max-width: 768px) {
+                .navbar-toggle { display: flex; }
+
+                .navbar-right {
+                    display: none;
+                    flex-direction: column;
+                    position: absolute;
+                    top: var(--nav-height);
+                    left: 0;
+                    width: 100%;
+                    height: auto;
+                    background-color: var(--bg-surface);
+                    padding: 20px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+                    align-items: center;
+                    border-bottom: 1px solid var(--border);
+                }
+
+                .navbar-right.active { display: flex; }
+
+                .dropdown { height: auto; margin-bottom: 10px; width: 100%; justify-content: center; flex-direction: column; }
+                
+                .dropdown-content {
+                    position: static;
+                    box-shadow: none;
+                    background: transparent;
+                    border: none;
+                    text-align: center;
+                    display: none;
+                    width: 100%;
+                }
+
+                .dropdown.active .dropdown-content { display: block; }
+                .dropdown-content a { color: var(--text-primary); }
+                .dropdown-content a:hover { background: var(--bg-base); color: var(--text-primary); padding-left: 20px; }
+            }
+        </style>
+
+        {% block stylesheets %}{% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body>
+
+        {# ── NAVBAR (HEADER) ─────────────────────────────────────────── #}
+        <header class="navbar">
+            
+            {# ACCUEIL (LOGO SEUL) #}
+            <div class="navbar-left">
+                <a href="{{ path('app_home') }}" title="Retour à l'accueil">
+                    <div class="navbar-logo">R</div>
+                    R-Tech
+                </a>
+            </div>
+
+            <div class="navbar-toggle" id="navbar-toggle">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+
+            <div class="navbar-right" id="navbar-right">
+                
+                {# CATALOGUE (DROPDOWN DÉDIÉ) #}
+                <div class="dropdown">
+                    <div class="icon-btn" title="Catalogue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </div>
+                    <div class="dropdown-content">
+                        {{ render(controller('App\\Controller\\HomeController::menuCategories')) }}
+                    </div>
+                </div>
+
+                {# PANIER (COMMUN À TOUS) #}
+                <a href="{{ path('cart_index') }}" class="cart-container" title="Panier">
+                    <div class="icon-btn cartlogo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    </div>
+                    {# On calcule la somme des quantités du panier #}
+                    {% set totalQuantity = 0 %}
+                    {% for item in cart_helper.getFullCart() %}
+                        {% set totalQuantity = totalQuantity + item.quantity %}
+                    {% endfor %}
+
+                    <div class="cart-count">{{ totalQuantity }}</div>
+                </a> 
+
+                {# SI L'UTILISATEUR N'EST PAS CONNECTÉ #}
+                {% if not app.user %}
+                    
+                    {# COMPTE DROPDOWN (CONNEXION) #}
+                    <div class="dropdown">
+                        <div class="icon-btn login" title="Mon Compte">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div class="dropdown-content">
+                            <a href="#">S'inscrire</a>
+                            <a href="{{ path('app_login') }}">Se connecter</a>
+                        </div>
+                    </div>
+
+                {# SI L'UTILISATEUR EST CONNECTÉ #}
+                {% else %}
+                    
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="/admin" title="Dashboard Admin" style="display: flex; align-items: center; height: 100%;">
+                            <div class="icon-btn dashboard">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                            </div>
+                        </a>
+                    {% endif %}
+                    
+                    <a href="#" title="Favoris" style="display: flex; align-items: center; height: 100%;">
+                        <div class="icon-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        </div>
+                    </a>
+                    
+                    {# COMPTE DROPDOWN (CONNECTÉ) #}
+                    <div class="dropdown">
+                        <div class="icon-btn profil" title="Mon Profil">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div class="dropdown-content">
+                            <a href="{{ path('app_account') }}" style="font-weight: bold; border-bottom: 1px solid var(--border);">Mon Espace</a>
+                            <a href="{{ path('app_account') }}">Mes Commandes</a>
+                            <a href="{{ path('app_logout') }}" style="color: var(--accent);">Déconnexion</a>
+                        </div>
+                    </div>
+                    
+                {% endif %}
+
+            </div>
+        </header>
+
+        {# ── CONTENU PRINCIPAL ───────────────────────────────────────── #}
+        <main class="site-main">
+            {% block body %}{% endblock %}
+        </main>
+
+        {# ── FOOTER ──────────────────────────────────────────────────── #}
+        <footer class="site-footer">
+            <h2>R-Tech</h2>
+            <p>La tech, sans compromis.</p>
+            
+            <div class="footer-links">
+                <a href="{{ path('app_product_index') }}">Boutique</a>
+                <a href="#">Contact</a>
+                <a href="#">Mentions légales</a>
+                <a href="#">CGV</a>
+            </div>
+
+            <div class="footer-bottom">
+                &copy; {{ "now"|date("Y") }} R-Tech. Tous droits réservés.
+            </div>
+        </footer>
+
+        {# ── SCRIPTS ─────────────────────────────────────────────────── #}
+        <script>
+            // Menu Hamburger Principal (Mobile)
+            const navbarToggle = document.getElementById('navbar-toggle');
+            const navbarRight = document.getElementById('navbar-right');
+
+            navbarToggle.addEventListener('click', () => {
+                navbarRight.classList.toggle('active');
+            });
+
+            // Transparence de la navbar au scroll
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+
+            // Gestion du clic pour les dropdowns sur mobile
+            document.addEventListener('DOMContentLoaded', function () {
+                const dropdowns = document.querySelectorAll('.dropdown');
+                dropdowns.forEach(dropdown => {
+                    dropdown.addEventListener('click', function (event) {
+                        if (window.innerWidth <= 768) {
+                            // Ferme les autres dropdowns
+                            dropdowns.forEach(d => { if(d !== this) d.classList.remove('active'); });
+                            // Ouvre ou ferme celui cliqué
+                            this.classList.toggle('active');
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

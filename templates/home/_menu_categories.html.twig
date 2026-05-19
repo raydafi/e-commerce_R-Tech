@@ -1,0 +1,5 @@
+<a href="{{ path('app_product_index') }}" style="font-weight: 700; border-bottom: 1px solid var(--border);">Tous les produits</a>
+
+{% for cat in categories %}
+    <a href="{{ path('app_product_index', {'category': cat.id}) }}">{{ cat.name }}</a>
+{% endfor %}

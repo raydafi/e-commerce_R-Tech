@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - E-commerce{% endblock %}
+
+{% block body %}
+<style>
+    .login-container { max-width: 400px; margin: 50px auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    .btn { width: 100%; padding: 12px; background-color: #000; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+    .btn:hover { background-color: #333; }
+    .alert-danger { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+</style>
+
+<div class="login-container">
+    <form method="post">
+        {# Affichage des erreurs (ex: mauvais mot de passe) #}
+        {% if error %}
+            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        {# Si l'utilisateur est déjà connecté bizarrement, on lui propose de se déconnecter #}
+        {% if app.user %}
+            <div class="form-group">
+                Vous êtes connecté en tant que {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Déconnexion</a>
+            </div>
+        {% endif %}
+
+        <h1 style="text-align: center; margin-bottom: 20px;">Connexion</h1>
+
+        <div class="form-group">
+            <label for="inputEmail">Adresse Email</label>
+            {# Le name="_username" est obligatoire pour que Symfony comprenne qu'il s'agit de l'identifiant #}
+            <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" autocomplete="email" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="inputPassword">Mot de passe</label>
+            {# Le name="_password" est obligatoire #}
+            <input type="password" name="_password" id="inputPassword" autocomplete="current-password" required>
+        </div>
+
+        {# Jeton de sécurité obligatoire pour éviter les failles CSRF #}
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button class="btn" type="submit">
+            Se connecter
+        </button>
+    </form>
+</div>
+{% endblock %}
