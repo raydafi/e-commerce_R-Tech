@@ -177,6 +177,3 @@ Contributions et retours bienvenus :
 - Ouvrez une issue pour signaler un bug ou proposer une amélioration.
 - Proposez une PR pour corriger/ajouter une fonctionnalité.
 
----
-
-Si vous souhaitez que je pousse ce README amélioré directement dans le dépôt, je peux créer une branche (par ex. `fix/readme`) et proposer un commit/PR — dites-moi si je dois le faire et quel nom de branche utiliser.
