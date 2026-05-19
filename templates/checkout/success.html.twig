@@ -1,0 +1,373 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande confirmée - R-Tech{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── PAGE ─────────────────────────────────────────────────── */
+    .success-page {
+        max-width: 640px;
+        margin: 5rem auto;
+        padding: 0 2rem;
+        text-align: center;
+    }
+
+    /* ── ANIMATED CHECKMARK ───────────────────────────────────── */
+    .check-wrapper {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 2rem;
+        position: relative;
+    }
+
+    .check-ring {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: rgba(74,222,128,0.08);
+        border: 2px solid rgba(74,222,128,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: ring-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes ring-pop {
+        0%   { transform: scale(0.4); opacity: 0; }
+        100% { transform: scale(1);   opacity: 1; }
+    }
+
+    .check-icon {
+        color: #4ade80;
+        animation: check-draw 0.4s ease 0.3s both;
+    }
+
+    @keyframes check-draw {
+        0%   { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+        100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .check-glow {
+        position: absolute;
+        inset: -12px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(74,222,128,0.12) 0%, transparent 70%);
+        animation: glow-pulse 2s ease-in-out 0.5s infinite alternate;
+        pointer-events: none;
+    }
+
+    @keyframes glow-pulse {
+        from { opacity: 0.4; }
+        to   { opacity: 1; }
+    }
+
+    /* ── HEADING ──────────────────────────────────────────────── */
+    .success-heading {
+        font-family: var(--font-display);
+        font-size: clamp(24px, 5vw, 32px);
+        font-weight: 800;
+        letter-spacing: -1px;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        animation: fade-up 0.5s ease 0.4s both;
+    }
+
+    .success-sub {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        margin-bottom: 2.5rem;
+        animation: fade-up 0.5s ease 0.5s both;
+    }
+
+    @keyframes fade-up {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── ORDER CARD ───────────────────────────────────────────── */
+    .order-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        text-align: left;
+        animation: fade-up 0.5s ease 0.6s both;
+    }
+
+    .order-card-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .order-card-title {
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        letter-spacing: -0.2px;
+    }
+
+    .badge-confirmed {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(74,222,128,0.1);
+        border: 1px solid rgba(74,222,128,0.25);
+        color: #4ade80;
+    }
+
+    .badge-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #4ade80;
+        animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.3; }
+    }
+
+    .order-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .order-cell {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+    }
+
+    .order-cell:nth-child(even) { border-right: none; }
+
+    .order-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+    .order-cell-label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+    }
+
+    .order-cell-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        letter-spacing: -0.3px;
+    }
+
+    .order-cell-value.accent { color: var(--accent-light); }
+
+    .order-cell-value.green { color: #4ade80; }
+
+    /* ── INFO NOTE ────────────────────────────────────────────── */
+    .info-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 16px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        text-align: left;
+        margin-bottom: 2rem;
+        animation: fade-up 0.5s ease 0.7s both;
+    }
+
+    .info-note svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── ACTIONS ──────────────────────────────────────────────── */
+    .success-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fade-up 0.5s ease 0.8s both;
+    }
+
+    .btn-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 24px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+        font-size: 14px;
+        transition: background var(--transition), box-shadow var(--transition);
+    }
+
+    .btn-home:hover {
+        background: var(--accent-light);
+        box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-account {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 24px;
+        border: 1px solid var(--border-hover);
+        color: var(--text-secondary);
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+        font-size: 14px;
+        transition: color var(--transition), border-color var(--transition), background var(--transition);
+    }
+
+    .btn-account:hover {
+        color: var(--text-primary);
+        border-color: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.04);
+    }
+
+    /* ── CONFETTI DOTS ────────────────────────────────────────── */
+    .confetti {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .dot {
+        position: absolute;
+        top: -10px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+        to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+        .success-page { margin: 3rem auto; }
+        .order-grid { grid-template-columns: 1fr; }
+        .order-cell { border-right: none; }
+        .order-cell:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
+        .order-cell:last-child { border-bottom: none; }
+        .success-actions { flex-direction: column; }
+        .btn-home, .btn-account { justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── CONFETTI ────────────────────────────────────────────────── #}
+<div class="confetti" id="confetti"></div>
+
+<div class="success-page">
+
+    {# ── CHECKMARK ───────────────────────────────────────────── #}
+    <div class="check-wrapper">
+        <div class="check-glow"></div>
+        <div class="check-ring">
+            <svg class="check-icon" width="36" height="36" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        </div>
+    </div>
+
+    {# ── HEADING ─────────────────────────────────────────────── #}
+    <h1 class="success-heading">Commande confirmée !</h1>
+    <p class="success-sub">
+        Merci pour votre achat. Votre commande a bien été enregistrée<br>
+        et sera traitée dans les plus brefs délais.
+    </p>
+
+    {# ── ORDER DETAILS CARD ──────────────────────────────────── #}
+    <div class="order-card">
+        <div class="order-card-header">
+            <span class="order-card-title">Détails de la commande</span>
+            <span class="badge-confirmed">
+                <span class="badge-dot"></span>
+                Validée
+            </span>
+        </div>
+        <div class="order-grid">
+            <div class="order-cell">
+                <div class="order-cell-label">Numéro de commande</div>
+                <div class="order-cell-value accent">#{{ order.id }}</div>
+            </div>
+            <div class="order-cell">
+                <div class="order-cell-label">Date</div>
+                <div class="order-cell-value">{{ order.date is defined ? order.date|date('d/m/Y') : "now"|date('d/m/Y') }}</div>
+            </div>
+            <div class="order-cell">
+                <div class="order-cell-label">Montant total TTC</div>
+                <div class="order-cell-value green">{{ order.amount|number_format(2, ',', ' ') }} €</div>
+            </div>
+            <div class="order-cell">
+                <div class="order-cell-label">Livraison</div>
+                <div class="order-cell-value">Gratuite</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── NOTE ────────────────────────────────────────────────── #}
+    <div class="info-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>Un récapitulatif de votre commande est disponible dans votre espace client. Vous pouvez suivre l'évolution de votre commande depuis la rubrique <strong style="color:var(--text-secondary)">Historique des commandes</strong>.</span>
+    </div>
+
+    {# ── ACTIONS ─────────────────────────────────────────────── #}
+    <div class="success-actions">
+        <a href="{{ path('app_home') }}" class="btn-home">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+            Continuer mes achats
+        </a>
+        <a href="{{ path('app_account') }}" class="btn-account">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Voir mes commandes
+        </a>
+    </div>
+
+</div>
+
+<script>
+    const colors = ['#e63030','#ff5252','#4ade80','#facc15','#60a5fa','#f472b6'];
+    const container = document.getElementById('confetti');
+    for (let i = 0; i < 40; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.left        = Math.random() * 100 + 'vw';
+        dot.style.background  = colors[Math.floor(Math.random() * colors.length)];
+        dot.style.width       = (Math.random() * 6 + 4) + 'px';
+        dot.style.height      = dot.style.width;
+        dot.style.opacity     = Math.random() * 0.7 + 0.3;
+        dot.style.animationDuration  = (Math.random() * 2 + 1.5) + 's';
+        dot.style.animationDelay     = (Math.random() * 1.2) + 's';
+        container.appendChild(dot);
+    }
+</script>
+
+{% endblock %}

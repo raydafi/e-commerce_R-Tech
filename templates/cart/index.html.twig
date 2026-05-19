@@ -1,0 +1,584 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Panier - R-Tech{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── FORCER LE FOND GRIS CLAIR (Comme sur le catalogue) ── */
+    body { background-color: #f4f4f4 !important; }
+
+    /* ── PAGE LAYOUT ──────────────────────────────────────────── */
+    .cart-page {
+        max-width: 1100px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 2rem;
+        align-items: start;
+        background-color: transparent !important;
+    }
+
+    .page-heading {
+        font-family: var(--font-display);
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-heading .item-count {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        color: #007bff;
+        background: #e7f3ff;
+        padding: 3px 10px;
+        border-radius: 20px;
+        letter-spacing: 0;
+    }
+
+    /* ── CART TABLE ───────────────────────────────────────────── */
+    .cart-panel {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .cart-table thead tr {
+        border-bottom: 1px solid var(--border);
+        background: #f8f9fa;
+    }
+
+    .cart-table th {
+        padding: 14px 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        text-align: left;
+    }
+
+    .cart-table th:not(:first-child) {
+        text-align: right;
+    }
+
+    .cart-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+    }
+
+    .cart-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .cart-table tbody tr:hover {
+        background: #f8f9fa; /* Survol en gris très clair */
+    }
+
+    .cart-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        text-align: right;
+    }
+
+    .cart-table td:first-child {
+        text-align: left;
+    }
+
+    /* Product cell */
+    .product-cell {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .product-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-sm);
+        background: #f8f9fa;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-thumb-empty {
+        color: #ccc;
+    }
+
+    .product-info-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .product-info-cat {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    /* Price cell */
+    .cell-price {
+        font-size: 14px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+
+    /* Quantity cell */
+    .qty-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .qty-btn {
+        width: 30px;
+        height: 30px;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+        line-height: 1;
+    }
+
+    .qty-btn:hover {
+        background: #e9ecef; /* Fond gris au survol */
+        color: var(--text-primary);
+    }
+
+    .qty-value {
+        width: 34px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        padding: 0 4px;
+        line-height: 30px;
+    }
+
+    /* Total cell */
+    .cell-total {
+        font-family: var(--font-display);
+        font-size: 15px;
+        font-weight: 700;
+        color: #007bff;
+        white-space: nowrap;
+    }
+
+    /* Remove button */
+    .btn-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: var(--radius-sm);
+        border: 1px solid transparent;
+        color: #adb5bd;
+        transition: all 0.2s;
+    }
+
+    .btn-remove:hover {
+        color: #dc3545; /* Rouge pour la suppression */
+        background: #f8d7da;
+        border-color: #f5c6cb;
+    }
+
+    /* ── ORDER SUMMARY CARD ───────────────────────────────────── */
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        position: sticky;
+        top: calc(var(--nav-height) + 1.5rem);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .summary-title {
+        font-family: var(--font-display);
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.3px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        font-size: 13px;
+    }
+
+    .summary-row .label {
+        color: var(--text-secondary);
+    }
+
+    .summary-row .value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .summary-row.free .value {
+        color: #28a745; /* Vert pour gratuit */
+        font-size: 12px;
+        background: #d4edda;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    .summary-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 1rem 0;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .summary-total .total-label {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .summary-total .total-amount {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 800;
+        color: #007bff;
+        letter-spacing: -1px;
+    }
+
+    .summary-total .total-amount sup {
+        font-size: 14px;
+        font-weight: 600;
+        vertical-align: super;
+    }
+
+    .btn-checkout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 13px;
+        background: #007bff; /* Bleu principal */
+        color: #fff;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 14px;
+        transition: background 0.2s;
+        margin-bottom: 10px;
+        text-decoration: none;
+    }
+
+    .btn-checkout:hover {
+        background: #0056b3;
+    }
+
+    .btn-continue {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        padding: 11px;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        background: #fff;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-continue:hover {
+        color: #007bff;
+        border-color: #007bff;
+        background: #f8f9fa;
+    }
+
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 1rem;
+    }
+
+    /* ── EMPTY CART ───────────────────────────────────────────── */
+    .empty-cart {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 5rem 2rem;
+        border: 1px dashed #ccc;
+        background: #fff;
+        border-radius: var(--radius-lg);
+    }
+
+    .empty-cart svg {
+        opacity: 0.2;
+        color: #007bff;
+        margin-bottom: 1.25rem;
+    }
+
+    .empty-cart h2 {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-cart p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 1.75rem;
+    }
+
+    .btn-shop {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 24px;
+        background: #007bff;
+        color: #fff;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
+
+    .btn-shop:hover {
+        background: #0056b3;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+        .cart-page {
+            grid-template-columns: 1fr;
+        }
+        .summary-card {
+            position: static;
+        }
+        .cart-table th:nth-child(2),
+        .cart-table td:nth-child(2) {
+            display: none;
+        }
+    }
+
+    @media (max-width: 580px) {
+        .cart-page { padding: 0 1rem; margin: 1.5rem auto; }
+        .product-info-cat { display: none; }
+        .cart-table th:nth-child(3),
+        .cart-table td:nth-child(3) {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="cart-page">
+
+    {% if cart|length > 0 %}
+
+        {# ── LEFT : CART TABLE ──────────────────────────────────── #}
+        <div>
+            <h1 class="page-heading">
+                Mon panier
+                <span class="item-count">{{ cart|length }} article{{ cart|length > 1 ? 's' : '' }}</span>
+            </h1>
+
+            <div class="cart-panel">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Prix unit.</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart %}
+                            <tr>
+                                {# Produit #}
+                                <td>
+                                    <div class="product-cell">
+                                        <div class="product-thumb">
+                                            {% if item.product.image %}
+                                                <img src="{{ asset('uploads/images/products/' ~ item.product.image) }}"
+                                                     alt="{{ item.product.name }}">
+                                            {% else %}
+                                                <svg class="product-thumb-empty" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 5-5 4 4 3-3 6 6"/></svg>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="product-info-name">{{ item.product.name }}</div>
+                                            <div class="product-info-cat">
+                                                {{ item.product.category ? item.product.category.name : 'Sans catégorie' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {# Prix unitaire #}
+                                <td class="cell-price">
+                                    {{ item.product.price|number_format(2, ',', ' ') }} €
+                                </td>
+
+                                {# Quantité #}
+                                <td>
+                                    <div class="qty-control">
+                                        {# Le nom de la route est 'cart_decrease' (préfixe 'cart_' + nom 'decrease') #}
+                                        <a href="{{ path('cart_decrease', {id: item.product.id}) }}" class="qty-btn" title="Diminuer">−</a>       
+                                        <span class="qty-value">{{ item.quantity }}</span>
+                                        <a href="{{ path('cart_add', {id: item.product.id}) }}" class="qty-btn" title="Augmenter">+</a>
+                                    </div>
+                                </td>
+
+                                {# Total ligne #}
+                                <td class="cell-total">
+                                    {{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €
+                                </td>
+
+                                {# Supprimer #}
+                                <td>
+                                    <a href="{{ path('cart_remove', {id: item.product.id}) }}"
+                                       class="btn-remove" title="Supprimer">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                            <path d="M10 11v6M14 11v6"/>
+                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# ── RIGHT : ORDER SUMMARY ──────────────────────────────── #}
+        <div>
+            <h1 class="page-heading" style="opacity: 0; pointer-events: none; user-select: none;">–</h1>
+
+            <div class="summary-card">
+                <p class="summary-title">Récapitulatif</p>
+
+                <div class="summary-row">
+                    <span class="label">Sous-total TTC</span>
+                    <span class="value">{{ total|number_format(2, ',', ' ') }} €</span>
+                </div>
+                <div class="summary-row free">
+                    <span class="label">Livraison</span>
+                    <span class="value">Gratuite</span>
+                </div>
+                
+                {# La TVA est déduite mathématiquement du total TTC, sans modifier le prix à payer #}
+                <div class="summary-row" style="color: var(--text-muted);">
+                    <span class="label">Dont TVA (20%)</span>
+                    <span class="value">{{ (total - (total / 1.2))|number_format(2, ',', ' ') }} €</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-total">
+                    <span class="total-label">Total à payer</span>
+                    <span class="total-amount">
+                        {# Le total reste inchangé #}
+                        {{ total|number_format(2, ',', ' ') }}<sup>€</sup>
+                    </span>
+                </div>
+
+                <a href="{{ path('app_checkout') }}" class="btn-checkout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Valider la commande
+                </a>
+
+                <a href="{{ path('app_product_index') }}" class="btn-continue">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    Continuer mes achats
+                </a>
+
+                <div class="secure-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Paiement 100% sécurisé
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+
+        {# ── EMPTY STATE ─────────────────────────────────────────── #}
+        <div class="empty-cart">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <h2>Votre panier est vide</h2>
+            <p>Découvrez notre catalogue et ajoutez vos produits préférés.</p>
+            <a href="{{ path('app_product_index') }}" class="btn-shop">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                Explorer la boutique
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
